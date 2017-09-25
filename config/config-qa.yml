@@ -1,0 +1,20 @@
+app_name: Auth QA
+log_level: INFO
+
+#used in login.user_credentials_validator
+google_client_id: 415983465495-g55hgi9o6j0pc8pe2e2ap0fcvj1lpohn.apps.googleusercontent.com
+ttn_oauth_url: http://newers-world-oauth.qa2.tothenew.net/oauth/user
+hosted_domain: tothenew.com
+#used in token generator and validator
+token_issuer: abc.com
+#used in token generator and login
+access_token_ttl_sec: 3600
+refresh_token_ttl_sec: 2592000
+#used in token_id
+encryption_key: WtfyTDjeDBcSQcRuRIoRZF_OOkj12bwdIxYGzTH6UU8=
+#used in login
+event_manager_app_client_id: 12345
+#used in token_id
+event_manager_app_client_secret: abcde
+#used in token_generator
+pem_passphrase: 12345

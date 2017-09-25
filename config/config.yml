@@ -1,0 +1,19 @@
+# An employee record
+jwt_algorithm: RS256
+emp_name_key: employee_name
+emp_image_key: employee_image_url
+google_user_id_key: google_user_id
+emp_code_key: employee_code
+emp_email_key: sub
+emp_roll_key: roll
+emp_scope_key: scope
+emp_competency_key: employee_competency
+emp_data_key: emp_data
+acl_action_key: action_key
+acl_action_endpoint: end_point
+acl_action_http_method: http_method
+acl_action_display_key: action_display_name
+
+
+
+

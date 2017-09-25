@@ -1,0 +1,15 @@
+app_name: Auth Dev
+log_level: DEBUG
+google_client_id: 415983465495-g55hgi9o6j0pc8pe2e2ap0fcvj1lpohn.apps.googleusercontent.com
+ttn_oauth_url: http://nw-oauth.tothenew.com/oauth/user
+hosted_domain: tothenew.com
+token_issuer: abc.com
+access_token_ttl_sec: 3600
+refresh_token_ttl_sec: 2592000
+encryption_key: WtfyTDjeDBcSQcRuRIoRZF_OOkj12bwdIxYGzTH6UU8=
+event_manager_app_client_id: 12345
+event_manager_app_client_secret: abcde
+id_token_private_pem: pemkeys/public.key
+pem_passphrase: 12345
+access_token_private_pem: pemkeys/private.key
+access_token_public_pem: pemkeys/private.key.pub
