@@ -148,7 +148,7 @@ class Config(object):
                 return pemfile.read()
         else:
             # TODO: Download from S3
-            return None
+            return os.environ.get('id_token_private_key', None)
 
     @property
     def access_token_private_key(self):
@@ -157,7 +157,7 @@ class Config(object):
                 return pemfile.read()
         else:
             # TODO: Download from S3
-            return None
+            return os.environ.get('access_token_private_key', None)
 
     @property
     def access_token_public_key(self):
@@ -166,4 +166,4 @@ class Config(object):
                 return pemfile.read()
         else:
             # TODO: Download from S3
-            return None
+            return os.environ.get('access_token_public_key', None)
