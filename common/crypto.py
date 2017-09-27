@@ -2,7 +2,7 @@ import json
 
 from cryptography.fernet import Fernet
 
-from auth.common.config import Config
+from common.config import Config
 
 common = Config()
 # key = Fernet.generate_key()

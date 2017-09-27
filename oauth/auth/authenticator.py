@@ -1,11 +1,14 @@
 import datetime
 from multiprocessing import Process, Manager
 
-from auth.common.config import Config
+from common.config import Config
 
 common = Config()
-from auth.login import user_credentials_validator, scope
-from auth.token_generator import public, private
+from oauth.auth import scope
+from oauth.auth import user_credentials_validator
+from oauth.token.generator import public as public_token_generator
+from oauth.token.generator import private as private_token_generator
+from oauth.token.validator import private as authenticator
 
 
 def generate_config(config):
@@ -23,8 +26,8 @@ def grant_scope(data, all_scopes):
     return scope.list_emp_scope(emp_email, role_list, all_scopes)
 
 
-# Asymmetric encrypted token_generator: validating user credential and generate token_generator with RSA public key in PEM or SSH format
-def validate(google_id_token, ttn_oauth_access_token, client_request_data):
+# Asymmetric encrypted generator: validating user credential and generate generator with RSA public key in PEM or SSH format
+def login(google_id_token, ttn_oauth_access_token, client_request_data):
     data = user_credentials_validator.validate(google_id_token, ttn_oauth_access_token)
     config = {}
 
@@ -42,13 +45,13 @@ def validate(google_id_token, ttn_oauth_access_token, client_request_data):
     error_dict["access_token_error"] = False
     error_dict["refresh_token_error"] = False
 
-    id_token_process = Process(target=public.generateIdToken,
+    id_token_process = Process(target=public_token_generator.generateIdToken,
                                args=(data, scope_dict["id_token_scope_list"], return_dict, error_dict))
 
-    access_token_process = Process(target=private.generate_token,
+    access_token_process = Process(target=private_token_generator.generate_token,
                                    args=(data, scope_dict["access_token_scope"], common.client_id, iat_utc_datetime, client_request_data, "access",
                                          return_dict, error_dict))
-    refresh_token_process = Process(target=private.generate_token,
+    refresh_token_process = Process(target=private_token_generator.generate_token,
                                     args=(data, scope_dict["access_token_scope"], common.client_id, iat_utc_datetime, client_request_data, "refresh",
                                           return_dict, error_dict))
     id_token_process.start()
@@ -71,4 +74,23 @@ def validate(google_id_token, ttn_oauth_access_token, client_request_data):
     response["app_name"] = common.app_name
     response["request_id"] = common.request_id
     response["config"] = config
+    return response
+
+
+def refresh(refresh_token, client_id, client_request_data):
+    data = authenticator.validate(refresh_token, client_id, client_request_data)
+    iat_utc_datetime = datetime.datetime.utcnow()
+
+    response = {}
+    error = {"access_token":False}
+    private_token_generator.generate_token(auth_response_data=data, scope= data[common.emp_scope_key], audience_id=client_id, iat_utc_datetime=iat_utc_datetime, client_request_data=client_request_data, token_use="access", return_dict=response, error_dict=error)
+
+    if error["access_token"]:
+        raise Exception("Interbal server error")
+
+    response["access_token_expires_in"] = common.access_token_ttl_sec
+    response["token_type"] = "Bearer"
+    response["app_name"] = common.app_name
+    response["request_id"] = common.request_id
+
     return response

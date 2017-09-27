@@ -1,4 +1,4 @@
-from auth.common.config import Config
+from common.config import Config
 common = Config()
 
 ACL_ACTION_KEY = common.acl_action_key
@@ -69,7 +69,7 @@ def list_emp_scope(emp_email_id, role_list, all_scopes):
     role_scopes = list_role_scopes(role_list)
     # Finding all allowed scopes for the requested user
     id_token_scope_list = list_emp_scopes(role_scopes, emp_email_id)
-    # Preparing the map to use in the access_token and the refresh token_generator as user scope detail
+    # Preparing the map to use in the access_token and the refresh generator as user scope detail
     access_token_scope_dict = dict()
 
     has_grant_access = False

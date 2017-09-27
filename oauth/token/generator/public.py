@@ -2,13 +2,13 @@ import traceback
 
 import jwt
 
-from auth.common.config import Config
+from common.config import Config
 
 common = Config()
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
-from auth.common import log
+from common import log
 
 EMP_EMAIL_KEY = common.emp_email_key
 
@@ -20,7 +20,7 @@ private_key = serialization.load_pem_private_key(
     backend=default_backend())
 
 
-# Assymmetric encrypted token_generator: Generating id token_generator
+# Assymmetric encrypted generator: Generating id generator
 def generateIdToken(authResponseData, scope, return_dict, error_dict):
     try:
         EMP_DATA_KEY = common.emp_data_key

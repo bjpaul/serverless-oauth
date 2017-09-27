@@ -1,17 +1,20 @@
 import traceback
 from multiprocessing import Process, Manager
+
 import requests
-from auth.common.config import Config
+
+from common.config import Config
+
 common = Config()
 from oauth2client import client, crypt
-from auth.common import log
+from common import log
 
 EMP_TTN_EMAIL_KEY = "employee_ttn_email_id"
 GOOGLE_TTN_EMAIL_KEY = "employee_google_email_id"
 
 def validate_google_id_token(token, client_id, return_dict, error_dict):
     try:
-        # idinfo = client.verify_id_token(token_generator, None)
+        # idinfo = client.verify_id_token(generator, None)
         idinfo = client.verify_id_token(token, client_id)
 
         if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:

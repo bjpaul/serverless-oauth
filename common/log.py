@@ -1,6 +1,6 @@
 import logging
 
-from auth.common.config import Config
+from common.config import Config
 
 common = Config()
 
