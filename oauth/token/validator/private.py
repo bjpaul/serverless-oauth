@@ -1,20 +1,13 @@
 import jwt
-import json
 from common import crypto
-from common.config import Config
-
-cnf = Config()
-from cryptography.hazmat.backends import default_backend
-from cryptography.hazmat.primitives import serialization
-
 from common import log
+from oauth.token import client_request
+from common.config import Config
+cnf = Config()
 
-# This RSA public key will not be shared with the client, so the access and refresh generator can not be decoded at the client side
-RSA_PUBLIC_KEY = cnf.access_token_public_key
 
-public_key = serialization.load_pem_public_key(
-    RSA_PUBLIC_KEY,
-    backend=default_backend())
+
+public_key = cnf.access_token_secret
 
 
 # Assymmetric encrypted generator: validating generator with RSA public key in PEM or SSH format
@@ -40,15 +33,11 @@ def validate_ae_token(e_token, audience_id):
         log.error(e)
         raise Exception('Unauthorized')
 
+
 def validate_token_id(jti, client_request_data):
-    data = json.loads(crypto.decrypt(jti))
-    if data["client_secret"] != cnf.client_secret:
-        return False
+    data = client_request.build_data(client_request_data)
+    return crypto.validate(data=data, encrypted_data=jti)
 
-    if data["todo"] != client_request_data["todo"]:
-        return False
-
-    return True
 
 def validate(e_token, client_id, client_request_data):
     payload = validate_ae_token(e_token=e_token, audience_id=client_id)

@@ -1,4 +1,4 @@
-jwt_algorithm: RS256
+jwt_algorithm: HS256
 emp_name_key: employee_name
 emp_image_key: employee_image_url
 google_user_id_key: google_user_id

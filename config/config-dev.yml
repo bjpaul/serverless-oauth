@@ -9,7 +9,6 @@ refresh_token_ttl_sec: 2592000
 encryption_key: WtfyTDjeDBcSQcRuRIoRZF_OOkj12bwdIxYGzTH6UU8=
 event_manager_app_client_id: 12345
 event_manager_app_client_secret: abcde
-id_token_private_pem: pemkeys/public.key
-pem_passphrase: 12345
-access_token_private_pem: pemkeys/private.key
-access_token_public_pem: pemkeys/private.key.pub
+id_token_secret: 12345
+access_token_secret: 1234567890
+encryption_salt: salt_key

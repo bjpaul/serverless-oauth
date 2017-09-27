@@ -16,5 +16,7 @@ encryption_key: WtfyTDjeDBcSQcRuRIoRZF_OOkj12bwdIxYGzTH6UU8=
 event_manager_app_client_id: 12345
 #used in token_id
 event_manager_app_client_secret: abcde
-#used in generator
-pem_passphrase: 12345
+
+id_token_secret: 12345
+access_token_secret: 1234567890
+encryption_salt: salt_key

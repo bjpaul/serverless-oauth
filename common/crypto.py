@@ -1,18 +1,16 @@
 import json
-
-from cryptography.fernet import Fernet
+import crypt
 
 from common.config import Config
 
 common = Config()
-# key = Fernet.generate_key()
-key = common.encryption_key
-cipher_suite = Fernet(key)
+key = common.encryption_salt
 
 
 def encrypt(data):
-    return cipher_suite.encrypt(json.dumps(data))
+    return crypt.crypt(json.dumps(data), key)
 
 
-def decrypt(data):
-    return cipher_suite.decrypt(json.dumps(data))
+def validate(data, encrypted_data):
+    return crypt.crypt(json.dumps(data), key) == encrypted_data
+

@@ -2,21 +2,27 @@ import yaml
 import uuid
 import os
 
+# env = os.environ.get('ENV', None)
+env = os.environ.get('ENV', "dev")
+if not env:
+    raise ValueError('You must have set "ENV" variable')
+
+with open("config/config.yml", "rb") as file:
+    config = yaml.load(file.read())
+
+with open("config/config-" + str(env) + ".yml", "rb") as file:
+    data = yaml.load(file.read())
+    config.update(data)
+
+req_id = str(uuid.uuid4())
+
 
 class Config(object):
     def __init__(self):
-        self._env = os.environ.get('ENV', None)
-        if not self._env:
-            raise ValueError('You must have set "ENV" variable')
 
-        with open("config/config.yml", "rb") as config:
-            self._config = yaml.load(config.read())
-
-        with open("config/config-"+str(self._env)+".yml", "rb") as config:
-            data = yaml.load(config.read())
-            self._config.update(data)
-        self._req_id = str(uuid.uuid4())
-
+        self._env = env
+        self._config = config
+        self._req_id = req_id
 
     def get_str_property(self, property_name):
         return str(self.get_property(property_name))
@@ -118,10 +124,6 @@ class Config(object):
         return self.get_str_property("event_manager_app_client_secret")
 
     @property
-    def pem_passphrase(self):
-        return self.get_str_property("pem_passphrase")
-
-    @property
     def app_name(self):
         return self.get_str_property("app_name")
 
@@ -138,32 +140,13 @@ class Config(object):
         return self._req_id
 
     @property
-    def encryption_key(self):
-        return self.get_str_property("encryption_key")
+    def id_token_secret(self):
+        return self.get_str_property("id_token_secret")
 
     @property
-    def id_token_private_key(self):
-        if self._env == "dev":
-            with open(self.get_str_property("id_token_private_pem"), "rb") as pemfile:
-                return pemfile.read()
-        else:
-            # TODO: Download from S3
-            return os.environ.get('id_token_private_key', None)
+    def access_token_secret(self):
+        return self.get_str_property("access_token_secret")
 
     @property
-    def access_token_private_key(self):
-        if self._env == "dev":
-            with open(self.get_str_property("access_token_private_pem"), "rb") as pemfile:
-                return pemfile.read()
-        else:
-            # TODO: Download from S3
-            return os.environ.get('access_token_private_key', None)
-
-    @property
-    def access_token_public_key(self):
-        if self._env == "dev":
-            with open(self.get_str_property("access_token_public_pem"), "rb") as pemfile:
-                return pemfile.read()
-        else:
-            # TODO: Download from S3
-            return os.environ.get('access_token_public_key', None)
+    def encryption_salt(self):
+        return self.get_str_property("encryption_salt")
