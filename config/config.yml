@@ -2,7 +2,6 @@ env_list: dev,qa,production
 jwt_algorithm: HS256
 emp_name_key: employee_name
 emp_image_key: employee_image_url
-google_user_id_key: google_user_id
 emp_code_key: employee_code
 emp_email_key: sub
 emp_role_key: role

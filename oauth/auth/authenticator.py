@@ -24,13 +24,13 @@ def grant_scope(data):
 
 
 # Asymmetric encrypted generator: validating user credential and generate generator with RSA public key in PEM or SSH format
-def login(google_id_token, ttn_oauth_access_token, client_id, client_request_data):
+def login(ttn_oauth_access_token, client_id, client_request_data):
     
     if client_id != common.client_id:
         log.debug("Invalid client id : " + client_id)
         raise Exception(common.un_authorize)
     
-    data = user_credentials_validator.validate(google_id_token, ttn_oauth_access_token)
+    data = user_credentials_validator.validate( ttn_oauth_access_token)
 
     add_roles(data)
 

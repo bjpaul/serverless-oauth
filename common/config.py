@@ -48,11 +48,7 @@ class Config(object):
         return str(self.get_property(property_name))
 
     def get_property(self, property_name):
-        property_value = os.environ.get(property_name, None)
-        if not property_value:
-            # if property_name not in cnf.keys():  # we don't want KeyError
-            #     return None  # just return None if not found
-            return cnf[property_name]
+        property_value = os.environ.get(property_name, cnf[property_name])
         return property_value
     
 
@@ -76,9 +72,6 @@ class Config(object):
     def emp_image_key(self):
         return self.get_str_property("emp_image_key")
 
-    @property
-    def google_user_id_key(self):
-        return self.get_str_property("google_user_id_key")
 
     @property
     def emp_code_key(self):

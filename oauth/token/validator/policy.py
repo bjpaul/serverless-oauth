@@ -10,6 +10,23 @@ class HttpVerb:
     OPTIONS = 'OPTIONS'
     ALL = '*'
 
+    @staticmethod
+    def generate(method):
+        if method == "GET":
+            return HttpVerb.GET
+        elif method == "POST":
+            return HttpVerb.POST
+        elif method == "PUT":
+            return HttpVerb.PUT
+        elif method == "PATCH":
+            return HttpVerb.PATCH
+        elif method == "HEAD":
+            return HttpVerb.HEAD
+        elif method == "DELETE":
+            return HttpVerb.DELETE
+        elif method == "*":
+            return HttpVerb.ALL
+
 
 class AuthPolicy(object):
     # The AWS account id the policy will be generated for. This is used to create the method ARNs.

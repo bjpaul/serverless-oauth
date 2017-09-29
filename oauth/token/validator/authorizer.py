@@ -1,15 +1,34 @@
 from __future__ import print_function
+import traceback
 from oauth.token.validator.policy import AuthPolicy
 from oauth.token.validator.policy import HttpVerb
 from oauth.token.validator import private
 from common import config
+from common.logs import Log
+from util.response import Builder
+import json
 
+log = Log()
+
+def validate(event):
+    return authorize(event)
+    
 def authorize(event):
+    # log.debug("********** jwt payload > "+str(event))
     client_request_data = config.init(event)
-    client_id = event["client_id"]
-    accessToken = event['authorizationToken']
+    try:
+        body = json.loads(event["body"])
+        accessToken = body['authorizationToken']
+        headers = event["headers"]
+        client_id = headers["client_id"]
+    except Exception as e:
+        traceback.print_exc()
+        return Builder.bad_request_error_message(e.message)
 
-    print(event)
+    payload = private.validate(accessToken, client_id, client_request_data)
+    # client_request_data = config.init(event)
+    # client_id = event["client_id"]
+    # accessToken = event['authorizationToken']
 
     '''
     Validate the incoming token and produce the principal user identifier
@@ -19,8 +38,8 @@ def authorize(event):
     2. Decode a JWT token inline
     3. Lookup in a self-managed DB
     '''
-    payload = private.validate(accessToken, client_id=client_id, client_request_data=client_request_data)
-
+    # payload = private.validate(accessToken, client_id=client_id, client_request_data=client_request_data)
+    log.debug("********** jwt payload > "+str(payload))
     principalId = payload["sub"]
 
     '''
@@ -43,7 +62,9 @@ def authorize(event):
 
     The example policy below denies access to all resources in the RestApi.
     '''
-    tmp = event['methodArn'].split(':')
+    method_arn = "arn:aws:execute-api:us-east-1:187632318301:dhxwub3cn5/*/POST/login"
+    # method_arn = event['methodArn']
+    tmp = method_arn.split(':')
     apiGatewayArnTmp = tmp[5].split('/')
     awsAccountId = tmp[4]
 
@@ -55,7 +76,7 @@ def authorize(event):
     data = payload["scope"]["access"]
     for endpoint, httpMethods in data.iteritems():
         for httpMethod in httpMethods:
-            policy.allowMethod(httpMethod, endpoint)
+            policy.allowMethod(httpMethod["http_method"], endpoint)
 
     # Finally, build the policy
     authResponse = policy.build()
@@ -63,10 +84,8 @@ def authorize(event):
     # new! -- add additional key-value pairs associated with the authenticated principal
     # these are made available by APIGW like so: $context.authorizer.<key>
     # additional context is cached
-    context = payload
+    context = json.dumps(payload)
 
     authResponse['context'] = context
 
     return authResponse
-
-
