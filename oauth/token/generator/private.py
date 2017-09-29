@@ -3,8 +3,9 @@ import traceback
 import jwt
 from common.config import Config
 from common import crypto
-from common import log
+from common.logs import Log
 from oauth.token import client_request
+log = Log()
 common = Config()
 
 private_key = common.access_token_secret
@@ -65,7 +66,7 @@ class AccessTokenGenerator(object):
     def generate(self):
         EMP_DATA_KEY = common.emp_data_key
         EMP_EMAIL_KEY = common.emp_email_key
-        EMP_ROLE_KEY = common.emp_roll_key
+        EMP_ROLE_KEY = common.emp_role_key
         EMP_SCOPE_KEY = common.emp_scope_key
         try:
             token_id = self.token_id_builder(client_request_data=self.client_request_data)
@@ -86,7 +87,8 @@ class AccessTokenGenerator(object):
             exp_utc_access = self.iat_utc_datetime + datetime.timedelta(seconds=delta)
             data["exp"] = exp_utc_access
             data["jti"] = token_id
-            token = self.generateToken(data)
+            token = str(self.generateToken(data))
+            token = crypto.reverse_token(token)
             self.return_dict[self._token_use + "_token"] = token
 
         except Exception as e:

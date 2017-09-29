@@ -1,15 +1,16 @@
-import json
+from common.logs import Log
 from oauth.auth import authenticator
+from util import response
 from common.config import Config
-from common import log
+log = Log()
 cnf = Config()
 
 def refresh_handler(event, context):
-    refreshToken = event["refresh_token"]
-    client_id = event["client_id"]
-    client_request_data = json.dumps(event["client_request_data"])
-    return authenticator.refresh(refresh_token=refreshToken, client_id=client_id,
-                                 client_request_data=client_request_data)
+    refreshToken = event["body"]["refresh_token"]
+    client_id = event["headers"]["client_id"]
+    client_request_data = event["client_request_data"]
+    return response.build(authenticator.refresh(refresh_token=refreshToken, client_id=client_id,
+                                                client_request_data=client_request_data))
 
 
 if __name__== "__main__":
@@ -20,4 +21,4 @@ if __name__== "__main__":
             "todo":"TODO"
         }
     }
-    log.info(refresh_handler(event ,None))
+    log.info(refresh_handler(event, None))

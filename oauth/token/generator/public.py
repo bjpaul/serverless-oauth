@@ -1,7 +1,8 @@
 import traceback
 import jwt
 from common.config import Config
-from common import log
+from common.logs import Log
+log = Log()
 
 common = Config()
 EMP_EMAIL_KEY = common.emp_email_key
@@ -36,7 +37,7 @@ class IdTokenGenerator(object):
     def generate(self):
         try:
             EMP_DATA_KEY = common.emp_data_key
-            EMP_ROLE_KEY = common.emp_roll_key
+            EMP_ROLE_KEY = common.emp_role_key
             EMP_SCOPE_KEY = common.emp_scope_key
             data = {}
             data["token_use"] = "id"

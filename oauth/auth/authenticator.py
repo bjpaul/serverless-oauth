@@ -1,37 +1,40 @@
 import datetime
 from multiprocessing import Process, Manager
 from common.config import Config
-from oauth.auth import scope
+from oauth.auth.scope import scope
+from oauth.auth import competency
 from oauth.auth import user_credentials_validator
 from oauth.token.generator.public import IdTokenGenerator
 from oauth.token.generator.private import AccessTokenGenerator
 from oauth.token.validator import private as TokenValidator
+from common.logs import Log
+log = Log()
 common = Config()
-
-def generate_config(config):
-    config[common.emp_scope_key] = scope.all_scope_list()
-
+scp = scope.provider()
 
 def add_roles(data):
     emp_email = data[common.emp_email_key]
-    data[common.emp_roll_key] = scope.list_emp_roles(emp_email)
+    data[common.emp_role_key] = scp.list_emp_roles(emp_email)
 
 
-def grant_scope(data, all_scopes):
+def grant_scope(data):
     emp_email = data[common.emp_email_key]
-    role_list = data[common.emp_roll_key]
-    return scope.list_emp_scope(emp_email, role_list, all_scopes)
+    role_list = data[common.emp_role_key]
+    return scp.list_emp_scope(emp_email, role_list)
 
 
 # Asymmetric encrypted generator: validating user credential and generate generator with RSA public key in PEM or SSH format
-def login(google_id_token, ttn_oauth_access_token, client_request_data):
+def login(google_id_token, ttn_oauth_access_token, client_id, client_request_data):
+    
+    if client_id != common.client_id:
+        log.debug("Invalid client id : " + client_id)
+        raise Exception(common.un_authorize)
+    
     data = user_credentials_validator.validate(google_id_token, ttn_oauth_access_token)
-    config = {}
 
-    generate_config(config)
     add_roles(data)
 
-    scope_dict = grant_scope(data, config[common.emp_scope_key])
+    scope_dict = grant_scope(data)
 
     iat_utc_datetime = datetime.datetime.utcnow()
     manager = Manager()
@@ -84,7 +87,7 @@ def login(google_id_token, ttn_oauth_access_token, client_request_data):
     refresh_token_process.join()
 
     if error_dict["id_token_error"] or error_dict["access_token_error"] or error_dict["refresh_token_error"]:
-        raise Exception('Internal server error')
+        raise Exception(common.internal_server_error)
 
     response = return_dict.copy()  # Making a simple dictionary
 
@@ -92,8 +95,8 @@ def login(google_id_token, ttn_oauth_access_token, client_request_data):
     response["refresh_token_expires_in"] = common.refresh_token_ttl_sec
     response["principal"] = data[common.emp_email_key]
     response["token_type"] = "Bearer"
-    response["app_name"] = common.app_name
-    response["request_id"] = common.request_id
+    config = {}
+    config["competencies"] = competency.list_competency_config()
     response["config"] = config
     return response
 
@@ -118,11 +121,8 @@ def refresh(refresh_token, client_id, client_request_data):
     accessTokenGenerator.generate()
 
     if error["access_token"]:
-        raise Exception("Internal server error")
+        raise Exception(common.internal_server_error)
 
     response["access_token_expires_in"] = common.access_token_ttl_sec
     response["token_type"] = "Bearer"
-    response["app_name"] = common.app_name
-    response["request_id"] = common.request_id
-
     return response

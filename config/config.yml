@@ -1,17 +1,24 @@
+env_list: dev,qa,production
 jwt_algorithm: HS256
 emp_name_key: employee_name
 emp_image_key: employee_image_url
 google_user_id_key: google_user_id
 emp_code_key: employee_code
 emp_email_key: sub
-emp_roll_key: roll
+emp_role_key: role
 emp_scope_key: scope
 emp_competency_key: employee_competency
 emp_data_key: emp_data
-acl_action_key: action_key
+acl_action_order: action_order
 acl_action_endpoint: end_point
 acl_action_http_method: http_method
+acl_action_key: action_name
 acl_action_display_key: action_display_name
+collect_client_request_metadata: True
+competency_name_key: competency_name
+competency_color_code_key: competency_color_code
+event_resources_access_key: event_resource_access
+enable_jti_encryption: True
 
 
 

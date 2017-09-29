@@ -1,22 +1,31 @@
-from oauth.auth import authenticator
-from common import log
+import traceback
 import json
+
+from common import config
+
+from oauth.auth import authenticator
+from util.response import Builder
 
 
 def login_handler(event, context):
-    idToken = event["google_id_token"]
-    ttnOauthAccessToken = event["ttn_oauth_access_token"]
-    client_request_data = json.dumps(event["client_request_data"])
-    return authenticator.login(google_id_token=idToken, ttn_oauth_access_token=ttnOauthAccessToken,
-                               client_request_data=client_request_data)
+    client_request_data = config.init(event)
+    try:
+        body = json.loads(event["body"])
+        headers = event["headers"]
+        idToken = body["google_id_token"]
+        ttnOauthAccessToken = body["ttn_oauth_access_token"]
+        client_id = headers["client_id"]
+    except Exception as e:
+        traceback.print_exc()
+        return Builder.bad_request_error_message(e.message)
+    
+    builder = Builder(target=authenticator.login, args=(idToken, ttnOauthAccessToken,client_id, client_request_data))
+    return builder.build()
 
 
 if __name__== "__main__":
-    event = {
-        "google_id_token":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjViMDkyNGY2ZjgzYzcxOTUxNDk4Nzk1NGNmNjY2ODNiMzcwNjc3ZDQifQ.eyJhenAiOiI0MTU5ODM0NjU0OTUtZzU1aGdpOW82ajBwYzhwZTJlMmFwMGZjdmoxbHBvaG4uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MTU5ODM0NjU0OTUtZzU1aGdpOW82ajBwYzhwZTJlMmFwMGZjdmoxbHBvaG4uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDU3NTcwNzQxNTQ3NzYxOTQ2NTAiLCJoZCI6InRvdGhlbmV3LmNvbSIsImVtYWlsIjoiYmlqb3kucGF1bEB0b3RoZW5ldy5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6IkZEeE0yZnlCdTl0NE5YeWFNdE9zcUEiLCJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwianRpIjoiNTg2N2ViMmM3NmY4NjEwMGJiNWNhOGY3NTJlMGM1YWFmMDc2YTgyYyIsImlhdCI6MTUwNjU0MDc5NSwiZXhwIjoxNTA2NTQ0Mzk1LCJuYW1lIjoiQmlqb3kgUGF1bCIsInBpY3R1cmUiOiJodHRwczovL2xoNi5nb29nbGV1c2VyY29udGVudC5jb20vLWYwS3Q3TTNzQldjL0FBQUFBQUFBQUFJL0FBQUFBQUFBQlpvL3N5NGEtdzZlYko4L3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJCaWpveSIsImZhbWlseV9uYW1lIjoiUGF1bCIsImxvY2FsZSI6ImVuIn0.o_d7WJKg118aXsxFNigSms4Z2igGvVdLqjpXnse_TJXV3YsptyByiCjALsibR_9xcOKq6QFxjbagfOnsO_rhzXgazRhR8SHeOk9rHFTXeQEHm52rELx7lRJd5J_ANfjPtHVfDVWoIkKz2o73-Hf6xrYIG3xq1O_F6H7Av2PztEcsD4zyca4Xl_xp_G6HBJqxuRmJu-08Pf4x465mHHknK6AVO21GDdzDmjaT4eoRJKmX7cjz5HhIrLm7aBYsdI9LQVCPutKw21s6A-8GdXOcAevOBSS2abzv4p0_FOD9WPDRFwhFhdcALdil4Jw9pP_nx2UkoLebE-YSpD0GjDsHkg",
-        "ttn_oauth_access_token": "2d3418bf-9699-4ad1-9ec9-b2e1555facd9",
-        "client_request_data": {
-            "todo":"TODO"
-        }
-    }
-    log.info(login_handler(event ,None))
+    headers = {"client_id":"12345"}
+    body = "{\n    \"google_id_token\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjhlYzE3OTk0Mzk0NDY0ZDk1YjBiM2Q5MDYzMjZmMWNkZGU4YWVlNjQifQ.eyJhenAiOiI0MTU5ODM0NjU0OTUtZzU1aGdpOW82ajBwYzhwZTJlMmFwMGZjdmoxbHBvaG4uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI0MTU5ODM0NjU0OTUtZzU1aGdpOW82ajBwYzhwZTJlMmFwMGZjdmoxbHBvaG4uYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDU3NTcwNzQxNTQ3NzYxOTQ2NTAiLCJoZCI6InRvdGhlbmV3LmNvbSIsImVtYWlsIjoiYmlqb3kucGF1bEB0b3RoZW5ldy5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6ImNNOThmRHRNYnowck9aTkpPYmZ2Z2ciLCJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwianRpIjoiYWYwMDUwMDBkMDhmMGZjYzhkNjYwNzBjNmY5ZTU5YjYwY2I4OTY0YSIsImlhdCI6MTUwNjY2MzIyNiwiZXhwIjoxNTA2NjY2ODI2LCJuYW1lIjoiQmlqb3kgUGF1bCIsInBpY3R1cmUiOiJodHRwczovL2xoNi5nb29nbGV1c2VyY29udGVudC5jb20vLWYwS3Q3TTNzQldjL0FBQUFBQUFBQUFJL0FBQUFBQUFBQlpvL3N5NGEtdzZlYko4L3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJCaWpveSIsImZhbWlseV9uYW1lIjoiUGF1bCIsImxvY2FsZSI6ImVuIn0.wlTg34Y_n8K3I1Opr_9fJqrEI6BqVx_zrNzwrY-lBMGgTlW5rf_1D066XAasyWE-1Ain6-jhYQ2ZGzRbymaDPLN_YneKI-Edsv95-IpD6_taGEnXBw4pEnobbgYTrV5nq3kXL0Au9w8pjqajakz-FoZMMiEGd01wAfSfsXG-TXO-dsxYFGwy7RakYqJnlFZ6GWLKpLpfquLgJ3vatElC08vS7GuWebuCBqCc459pyeJtIG1cJ8bzB9IdZFmyhEd0-gEUG0CORCSpRnhxEd3zps0uG6ZyB344H6W0zZV1YTIVYbXcJydIyXdXkTQ17aXI18Er29WxqFPCsIcumRUtUg\"," "\n    \"ttn_oauth_access_token\":\"2d3418bf-9699-4ad1-9ec9-b2e1555facd9\"\n}"
+    event = {"resource":"/login","path":"/login","httpMethod":"POST","headers":headers,"queryStringParameters":None,"pathParameters":None,"stageVariables":None,"requestContext":{"path":"/login","accountId":"187632318301","resourceId":"gzmhx0","stage":"test-invoke-stage","requestId":"test-invoke-request","identity":{"cognitoIdentityPoolId":None,"accountId":"187632318301","cognitoIdentityId":None,"caller":"AIDAJHP6ODTX6ZTLMAC3I","apiKey":"test-invoke-api-key","sourceIp":"test-invoke-source-ip","accessKey":"ASIAJPA6PQYVRHSTL7EA","cognitoAuthenticationType":None,"cognitoAuthenticationProvider":None,"userArn":"arn:aws:iam::187632318301:user/geekcombat","userAgent":"Apache-HttpClient/4.5.x (Java/1.8.0_131)","user":"AIDAJHP6ODTX6ZTLMAC3I"},"resourcePath":"/login","httpMethod":"POST","apiId":"dhxwub3cn5"},"body":body,"isBase64Encoded":False}
+    print(json.dumps(login_handler(event ,None)))
+

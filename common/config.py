@@ -4,25 +4,45 @@ import os
 
 # env = os.environ.get('ENV', None)
 env = os.environ.get('ENV', "dev")
-if not env:
-    raise ValueError('You must have set "ENV" variable')
-
+req_id = str(uuid.uuid4())
 with open("config/config.yml", "rb") as file:
-    config = yaml.load(file.read())
+    cnf = yaml.load(file.read())
 
 with open("config/config-" + str(env) + ".yml", "rb") as file:
     data = yaml.load(file.read())
-    config.update(data)
+    cnf.update(data)
 
-req_id = str(uuid.uuid4())
+def init(event):
+    client_request_data = {}
+    if "stageVariables" in event:
+        stageVariables = event["stageVariables"]
+        if stageVariables:
+            for key, value in stageVariables.iteritems():
+                os.environ[key] = value
+    
+    global cnf
+    global env
+    global req_id
+    if "requestContext" in event:
+        requestContext = event["requestContext"]
+        if "stage" in requestContext:
+            if "env_list" in cnf:
+                if requestContext["stage"] in cnf["env_list"]:
+                    env = requestContext["stage"]
 
+        if "request_id" in requestContext:
+            req_id = requestContext["request_id"]
+
+        with open("config/config-" + str(env) + ".yml", "rb") as file:
+            data = yaml.load(file.read())
+            cnf.update(data)
+        if "identity" in requestContext:
+            requestIdentity = requestContext["identity"]
+            client_request_data["sourceIp"] = requestIdentity["sourceIp"]
+            client_request_data["userAgent"] = requestIdentity["userAgent"]
+    return client_request_data
 
 class Config(object):
-    def __init__(self):
-
-        self._env = env
-        self._config = config
-        self._req_id = req_id
 
     def get_str_property(self, property_name):
         return str(self.get_property(property_name))
@@ -30,10 +50,11 @@ class Config(object):
     def get_property(self, property_name):
         property_value = os.environ.get(property_name, None)
         if not property_value:
-            # if property_name not in self._config.keys():  # we don't want KeyError
+            # if property_name not in cnf.keys():  # we don't want KeyError
             #     return None  # just return None if not found
-            return self._config[property_name]
+            return cnf[property_name]
         return property_value
+    
 
     @property
     def google_client_id(self):
@@ -64,8 +85,8 @@ class Config(object):
         return self.get_str_property("emp_code_key")
 
     @property
-    def acl_action_key(self):
-        return self.get_str_property("acl_action_key")
+    def acl_action_order(self):
+        return self.get_str_property("acl_action_order")
 
     @property
     def acl_action_endpoint(self):
@@ -74,6 +95,14 @@ class Config(object):
     @property
     def acl_action_http_method(self):
         return self.get_str_property("acl_action_http_method")
+
+    @property
+    def acl_action_key(self):
+        return self.get_str_property("acl_action_key")
+
+    @property
+    def event_resources_access_key(self):
+        return self.get_str_property("event_resources_access_key")
 
     @property
     def acl_action_display_key(self):
@@ -104,8 +133,8 @@ class Config(object):
         return self.get_str_property("emp_email_key")
 
     @property
-    def emp_roll_key(self):
-        return self.get_str_property("emp_roll_key")
+    def emp_role_key(self):
+        return self.get_str_property("emp_role_key")
 
     @property
     def emp_scope_key(self):
@@ -137,7 +166,7 @@ class Config(object):
 
     @property
     def request_id(self):
-        return self._req_id
+        return req_id
 
     @property
     def id_token_secret(self):
@@ -150,3 +179,39 @@ class Config(object):
     @property
     def encryption_salt(self):
         return self.get_str_property("encryption_salt")
+
+    @property
+    def collect_client_request_metadata(self):
+        return self.get_property("collect_client_request_metadata")
+
+    @property
+    def competency_name_key(self):
+        return self.get_property("competency_name_key")
+
+    @property
+    def competency_color_code_key(self):
+        return self.get_property("competency_color_code_key")
+
+    @property
+    def enable_jti_encryption(self):
+        return self.get_property("enable_jti_encryption")
+
+    @property
+    def internal_server_error(self):
+        return "Internal Server Error"
+
+    @property
+    def un_authorize(self):
+        return "Unauthorized"
+
+    @property
+    def bad_request(self):
+        return "Bad Request"
+
+    @property
+    def forbidden(self):
+        return "Forbidden"
+
+    @property
+    def unsupported_operation(self):
+        return "Unsupported operation"

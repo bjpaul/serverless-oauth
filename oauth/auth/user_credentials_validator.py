@@ -7,7 +7,8 @@ from common.config import Config
 
 common = Config()
 from oauth2client import client, crypt
-from common import log
+from common.logs import Log
+log = Log()
 
 EMP_TTN_EMAIL_KEY = "employee_ttn_email_id"
 GOOGLE_TTN_EMAIL_KEY = "employee_google_email_id"
@@ -73,12 +74,12 @@ def validate(google_id_token, ttn_oauth_access_token):
     p2.join()
 
     if error_dict["google_error"] or error_dict["ttn_error"]:
-        raise Exception('Unauthorized')
+        raise Exception(common.un_authorize)
 
     if return_dict[GOOGLE_TTN_EMAIL_KEY] != return_dict[EMP_TTN_EMAIL_KEY]:
         log.debug("Error: Google email id : " + str(return_dict[GOOGLE_TTN_EMAIL_KEY]) + " != ttn email id : " + str(
             return_dict[EMP_TTN_EMAIL_KEY]))
-        raise Exception('Unauthorized')
+        raise Exception(common.un_authorize)
 
     return_dict[common.emp_email_key] = return_dict[GOOGLE_TTN_EMAIL_KEY]
     del return_dict[GOOGLE_TTN_EMAIL_KEY]

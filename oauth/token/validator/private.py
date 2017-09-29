@@ -1,11 +1,10 @@
 import jwt
 from common import crypto
-from common import log
+from common.logs import Log
 from oauth.token import client_request
 from common.config import Config
 cnf = Config()
-
-
+log = Log()
 
 public_key = cnf.access_token_secret
 
@@ -13,7 +12,7 @@ public_key = cnf.access_token_secret
 # Assymmetric encrypted generator: validating generator with RSA public key in PEM or SSH format
 def validate_ae_token(e_token, audience_id):
     try:
-        jwt_token = e_token
+        jwt_token = crypto.reverse_token(e_token)
         return jwt.decode(jwt_token, key=public_key, audience=audience_id, issuer=cnf.token_issuer,
                           algorithms=[cnf.ae_algorithm])
     except jwt.ExpiredSignatureError as e:
